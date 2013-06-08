@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/cctiger36/acts_as_rrranking.png?branch=master)](https://travis-ci.org/cctiger36/acts_as_rrranking) [![Gem Version](https://badge.fury.io/rb/acts_as_rrranking.png)](http://badge.fury.io/rb/acts_as_rrranking) [![Code Climate](https://codeclimate.com/github/cctiger36/acts_as_rrranking.png)](https://codeclimate.com/github/cctiger36/acts_as_rrranking)
 
-A rails plugin use redis to sort active_records on real time.
+A rails plugin use redis to sort models on real time.
 
 ## Example
 
