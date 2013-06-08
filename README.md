@@ -26,6 +26,8 @@ the name of the ranking field
   </tr>
 </table>
 
+## Helper Methods
+
 Suppose the name is :ranking and the score field is :game_point then the following methods will be generated:
 
 <table>
@@ -36,9 +38,9 @@ Suppose the name is :ranking and the score field is :game_point then the followi
     <td>#update_ranking(score)</td><td>update the score to redis, also will be invoked in the after_save hook</td>
   <tr>
   </tr>
-    <td>.top_rankings(limit, offset)</td><td>return the array of top ids</td>
+    <td>::top_rankings(limit, offset)</td><td>return the array of top ids</td>
   <tr>
   </tr>
-    <td>.top_ranking_player(limit, offset)</td><td>return the array of top models</td>
+    <td>::top_ranking_player(limit, offset)</td><td>return the array of top models</td>
   </tr>
 </table>
