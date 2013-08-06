@@ -32,7 +32,7 @@ module ActsAsRrranking
           self.redis.zrange('#{@redis_ranking_key}', offset, limit)
         end
 
-        def top_#{@ranking_key}_#{self.name.underscore.pluralize}(limit = 10, offset = 0)
+        def top_#{@ranking_key}_#{self.name.demodulize.underscore.pluralize}(limit = 10, offset = 0)
           ids = self.top_#{@ranking_key.to_s.pluralize}(limit, offset)
           self.where(#{@ranking_id}: ids)
         end
