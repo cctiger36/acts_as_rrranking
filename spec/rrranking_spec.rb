@@ -83,7 +83,7 @@ describe Player do
 
     describe "::top_rankings" do
       it "should return the highest score player's ids" do
-        Player.top_rankings(3) == [10, 9, 8]
+        Player.top_rankings(3).should == [player9.id, player8.id, player7.id]
       end
     end
 
@@ -95,7 +95,7 @@ describe Player do
       end
 
       it "should return the highest score players" do
-        Player.top_ranking_players(3).map(&:id) == [10, 9, 8]
+        Player.top_ranking_players(3).map(&:id).should == [player9.id, player8.id, player7.id]
       end
     end
   end

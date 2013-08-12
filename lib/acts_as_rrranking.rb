@@ -29,18 +29,38 @@ module ActsAsRrranking
 
       instance_eval <<-STR
         def top_#{@ranking_key.to_s.pluralize}(limit = 10, offset = 0)
-          self.redis.zrange('#{@redis_ranking_key}', offset, limit)
+          self.redis.zrange('#{@redis_ranking_key}', -limit - offset, -1 - offset).reverse.map(&:to_i)
         end
 
         def top_#{@ranking_key}_#{self.name.demodulize.underscore.pluralize}(limit = 10, offset = 0)
           ids = self.top_#{@ranking_key.to_s.pluralize}(limit, offset)
-          self.where(#{@ranking_id}: ids)
+          self.where(#{@ranking_id}: ids).order(self.ranking_order_by_statement(ids))
         end
 
         def redis_ranking_key
           '#{@redis_ranking_key}'
         end
       STR
+    end
+
+    def ranking_order_by_statement(ids)
+      case self.db_adapter
+      when /^mysql/
+        "FIELD(id, #{ids.join(',')})"
+      when /^sqlite/
+        stat = "CASE id"
+        ids.each_with_index do |id, index|
+          stat << " WHEN #{id} THEN #{index}"
+        end
+        stat << " END"
+        stat
+      else
+        raise "Database not supported"
+      end
+    end
+
+    def db_adapter
+      @db_name ||= ActiveRecord::Base.connection_config[:adapter]
     end
 
     def redis
