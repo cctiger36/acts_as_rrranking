@@ -34,9 +34,7 @@ describe Player do
     Redis.new.del(Player.redis_ranking_key)
   end
 
-  10.times do |i|
-    let("player#{i}".to_sym) { FactoryGirl.create(:player) }
-  end
+  10.times { |i| let("player#{i}".to_sym) { FactoryGirl.create(:player) } }
 
   it "should generate instance methods" do
     player0.should respond_to :current_ranking, :update_ranking
@@ -46,9 +44,24 @@ describe Player do
     Player.should respond_to :top_rankings, :top_ranking_players
   end
 
+  it "should remove ranking data from redis when model destroyed" do
+    player0.update_attributes!(game_point: 10)
+    player0.destroy
+    Player.redis.zrevrank(Player.redis_ranking_key, player0.id).should be_nil
+  end
+
   describe "::redis_ranking_key" do
     it "should generate redis key" do
       Player.redis_ranking_key.should == "player_ranking"
+    end
+  end
+
+  describe "::remove_all_redis_ranking_data" do
+    it "should remove all ranking data in redis" do
+      10.times { |i| send("player#{i}").send(:update_attributes!, game_point: i + 1) }
+      Player.redis.zcount(Player.redis_ranking_key, '-inf', '+inf').should > 0
+      Player.remove_all_redis_ranking_data
+      Player.redis.zcount(Player.redis_ranking_key, '-inf', '+inf').should == 0
     end
   end
 
@@ -65,20 +78,14 @@ describe Player do
     end
 
     it "should return the ranking" do
-      10.times do |i|
-        send("player#{i}").send(:update_attributes!, game_point: i + 1)
-      end
-      10.times do |i|
-        send("player#{i}").current_ranking.should == 10 - i
-      end
+      10.times { |i| send("player#{i}").send(:update_attributes!, game_point: i + 1) }
+      10.times { |i| send("player#{i}").current_ranking.should == 10 - i }
     end
   end
 
-  describe "get tops" do
+  context "get tops" do
     before do
-      10.times do |i|
-        send("player#{i}").send(:update_attributes!, game_point: i + 1)
-      end
+      10.times { |i| send("player#{i}").send(:update_attributes!, game_point: i + 1) }
     end
 
     describe "::top_rankings" do

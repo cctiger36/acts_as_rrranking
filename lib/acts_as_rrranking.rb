@@ -16,15 +16,20 @@ module ActsAsRrranking
           self.class.redis.zadd('#{@redis_ranking_key}', self.#{@score_key}, self.#{@ranking_id})
         end
 
+        def delete_#{@ranking_key}
+          self.class.redis.zrem('#{@redis_ranking_key}', self.#{@ranking_id})
+        end
+
         def current_#{@ranking_key}
           if self.#{@score_key} && self.#{@score_key} > 0
-            (self.class.redis.zrevrank('#{@redis_ranking_key}', self.#{@ranking_id}) || -1) + 1
+            (self.class.redis.zrevrank('#{@redis_ranking_key}', self.#{@ranking_id}) || -1).try(:+, 1)
           else
             nil
           end
         end
 
         after_save :update_#{@ranking_key}
+        after_destroy :delete_#{@ranking_key}
       STR
 
       instance_eval <<-STR
@@ -39,6 +44,10 @@ module ActsAsRrranking
 
         def redis_ranking_key
           '#{@redis_ranking_key}'
+        end
+
+        def remove_all_redis_ranking_data
+          self.redis.zremrangebyrank('#{@redis_ranking_key}', 0, -1)
         end
       STR
     end
@@ -63,8 +72,12 @@ module ActsAsRrranking
       @db_name ||= ActiveRecord::Base.connection_config[:adapter]
     end
 
+    def redis=(conn)
+      @redis = conn
+    end
+
     def redis
-      @redis ||= Redis.new
+      @redis || Redis.current || raise("Redis connection not set")
     end
   end
 end
